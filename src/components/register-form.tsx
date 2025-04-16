@@ -14,6 +14,7 @@ import {
   FormLabel,
   FormMessage
 } from "@/components/ui/form.tsx";
+import {useAuth} from "@/context/useAuth.tsx";
 
 const formSchema = z.object({
   name: z.string()
@@ -30,15 +31,15 @@ const formSchema = z.object({
   password: z.string().nonempty().min(8).max(20)
     .regex(
       /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,20}$/,
-      `At least one uppercase letter<br>, 
+      `At least one uppercase letter, 
     one lowercase letter, 
     one number and 
     one special character`
     ),
-  passwordConfirmation: z.string().nonempty(),
-}).refine((data) => data.password === data.passwordConfirmation, {
+  confirmPassword: z.string().nonempty(),
+}).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords do not match",
-  path: ["passwordConfirmation"],
+  path: ["confirmPassword"],
 });
 
 type FormSchema = z.infer<typeof formSchema>;
@@ -47,6 +48,8 @@ export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+
+  const { registerUser } = useAuth();
   const form = useForm<FormSchema>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -54,12 +57,12 @@ export function RegisterForm({
       username: "",
       email: "",
       password: "",
-      passwordConfirmation: "",
+      confirmPassword: "",
     },
   });
 
   function handleSubmitForm(data: FormSchema) {
-    console.log(data);
+    registerUser(data);
   }
 
   return (
@@ -128,7 +131,7 @@ export function RegisterForm({
             />
             <FormField
               control={form.control}
-              name="passwordConfirmation"
+              name="confirmPassword"
               render={({field}) => (
                 <FormItem>
                   <FormLabel>Password Confirmation</FormLabel>
